@@ -89,9 +89,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions((this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            }));
-            }
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                ACCESS_FINE_LOCATION}, REQUEST_COARSE_ACCESS);
+            return;
+        }else {
+            permissionGranted = true;
+        }
+
+        if(permissionGranted){
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case REQUEST_COARSE_ACCESS:
+                if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    permissionGranted = true;
+                    if(ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED){
+                        return;
+                    }
+                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0, locationListener);
+                }else{
+                    permissionGranted = false;
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ACCESS_FINE_LOCATION}, REQUEST_COARSE_ACCESS);
+            return;
+        }else{
+            permissionGranted = true;
+        }
+        if(permissionGranted) {
+            lm.removeUpdates(locationListener);
         }
     }
 }
