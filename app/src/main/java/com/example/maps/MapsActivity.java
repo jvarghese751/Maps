@@ -9,6 +9,8 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -19,9 +21,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.maps.databinding.ActivityMapsBinding;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
@@ -53,7 +61,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.makeText(getBaseContext(), "Current Location: Lat: " + location.getLatitude()
                         + " Lng: " + location.getLongitude(), Toast.LENGTH_SHORT).show();
                 LatLng p = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(p).title("Current Location"));
+
+                Geocoder geocoder = new Geocoder(getBaseContext(), Locale.getDefault());
+                List<Address> addresses = null;
+                String add = "";
+                try{
+                    addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                    Address address = addresses.get(0);
+
+                    if (addresses.size() > 0){
+                        add += address.getAddressLine(0);
+                    }
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+                mMap.addMarker(new MarkerOptions()
+                        .position(p)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                        .title(add));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(p, 12.0f));
             }
         }
